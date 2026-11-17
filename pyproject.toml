@@ -6,9 +6,10 @@ build-backend = "setuptools.build_meta"
 name = "scorecard"
 version = "0.1.0"
 requires-python = ">=3.10"
+# Pinned: newer numpy/pandas builds are blocked by Smart App Control on the dev laptop.
 dependencies = [
-  "pandas", "numpy", "scikit-learn", "lightgbm",
-  "matplotlib", "pyyaml",
+  "numpy==1.26.4", "pandas==2.2.3", "scikit-learn==1.5.2",
+  "lightgbm==4.5.0", "scipy==1.13.1", "matplotlib", "pyyaml",
 ]
 
 [project.optional-dependencies]
