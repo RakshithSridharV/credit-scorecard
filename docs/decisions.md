@@ -550,7 +550,7 @@ owner), *Open* (still to be resolved), or *Required* (work that must happen late
 - **Result.** 26 new tests (23 unit, 3 integration), full suite 146 passed, ruff clean.
   **Skew test:** the service on the raw valid rows produces exactly the same score as the
   offline scorecard on the cleaned valid file, for every row.
-- **Finding (the walkthrough example).** Two applicants differ only in income, and both have
+- **Finding (worked example).** Two applicants differ only in income, and both have
   DebtRatio 0.3. Income 0 gives **589**; income 4000 gives **586**. With income 0, `DebtRatio`
   becomes missing, and the Missing bin (train bad rate 5.4%) scores 3 points above the
   0.02-0.43 bin (6.1%). Both are approved.
@@ -815,3 +815,24 @@ owner), *Open* (still to be resolved), or *Required* (work that must happen late
   - *No branch protection yet.* "CI must pass before merge" is a GitHub repository setting for the
     owner to switch on.
   - *The skew test never runs in CI.* Run `make check` locally (data present) before any release.
+
+---
+
+## D-028 Documentation: architecture, assumptions register, business case
+*Proposed, 2026-11-21.*
+
+- **What.** Three documents in `docs/`, written for reviewers who have not read the code:
+  - [architecture.md](architecture.md): the offline pipeline, the scoring service, the audit table,
+    deployment and quality gates, with diagrams;
+  - [assumptions.md](assumptions.md): every number not learned from data, labelled Benchmark /
+    Assumption / Illustrative / Data fact, plus limitations and the open-risk register (R-1 to R-10);
+  - [business_case.md](business_case.md): test-set results, policy outcome at cutoff 549, the
+    Illustrative value (+$1.10M per 10,000 applicants vs approve-all), sensitivity, the scorecard
+    vs challenger trade-off, KPIs and next steps.
+- **Why.** A model risk reviewer or credit committee needs the assumptions and the money case in
+  one place, separate from code. Every figure is copied from a generated report, so the documents
+  can be checked against `reports/`.
+- **Alternatives.** Leaving the information spread across the decision log and reports (complete,
+  but hard to review); a single long README (mixes setup instructions with governance content).
+- **Open risks.** The documents are written by hand. If the model is rebuilt with different
+  results, they must be updated too. Generating them from the reports would remove this risk.
