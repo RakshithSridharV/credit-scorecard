@@ -967,7 +967,7 @@ owner), *Open* (still to be resolved), or *Required* (work that must happen late
 ---
 
 ## D-032 Age-removal experiment (R-11): keep `age`; record the trade-off for the owner
-*Proposed, 2026-11-21. Awaiting approval.*
+*Approved, 2026-11-21. Age kept; the trade-off is disclosed as evidence for the owner.*
 
 - **What.** `python -m scorecard.evaluation.age_ablation` writes
   [reports/age_ablation.md](../reports/age_ablation.md) and is a stage of the training pipeline.
