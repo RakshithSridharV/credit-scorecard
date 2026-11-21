@@ -79,7 +79,7 @@ flowchart LR
    - age must be at least 18.
 
    Errors return **422** without echoing the applicant's values.
-2. **The core validates again.** Batch jobs and the future Streamlit app call the core directly, so the HTTP schema is not the only guard (defence in depth).
+2. **The core validates again.** Batch jobs and the Streamlit what-if app call the core directly, so the HTTP schema is not the only guard (defence in depth).
 3. **Same `clean()` as training.** The service imports the training function rather than a copy of it. A skew test checks that the service and the offline pipeline give identical scores on every validation row.
 4. **Score, decision and reasons.** The core computes:
    - the integer score;
@@ -102,6 +102,15 @@ flowchart LR
 | `GET /health` | Liveness: the process is up and the model is loaded (returns `model_version` and `cutoff`) |
 | `GET /ready` | Readiness: the database is reachable, so decisions can be recorded |
 | `GET /docs`, `/openapi.json` | Generated API contract |
+
+### Underwriter what-if app
+
+`app/streamlit_app.py` (`make app`) is a screen for credit staff. They enter an application and see:
+- the score, PD and outcome;
+- the decline reasons as they would appear on the notice;
+- a per-feature points breakdown against the train-average applicant (`ScoringService.breakdown`, which sums exactly to the score).
+
+They can then change fields and compare. It calls the **same** `ScoringService` as the API, so the two cannot disagree. It is **simulation only**: it never writes to the audit log, and it shows a banner saying so. Real decisions have a single channel (`POST /score`) and a single record.
 
 ## 3. Data model: the audit table
 
@@ -161,6 +170,7 @@ migrations/         Alembic revisions
 models/             fitted artifacts (JSON / LightGBM text), fingerprinted
 reports/            generated reports and the test lock
 tests/              unit/, api/, integration/
+app/                Streamlit what-if app (simulation only)
 docker/, Dockerfile, docker-compose.yml, requirements/serve.lock
 docs/               this file, assumptions, business case, decision log
 ```

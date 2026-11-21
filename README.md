@@ -30,7 +30,7 @@ Money figures are **Illustrative**: they depend on assumed exposure, margin and 
 - **One decision path.** The API uses the same `clean()` as training. A skew test shows identical scores offline and online.
 - **Fail-safe serving.** Strict input contract (422 errors that never echo applicant data), fail-fast start-up, and fail-closed audit writes: no record means no decision.
 - **Least-privilege deployment.** Docker image runs as a non-root user. A migrate-once job manages the schema. The API's Postgres role can only `SELECT` and `INSERT`.
-- **Governed.** 29 recorded decisions with alternatives, a [model card](reports/model_card.md) including subgroup performance, monitoring with PSI / CSI, and CI on every push.
+- **Governed.** 30 recorded decisions with alternatives, a [model card](reports/model_card.md) including subgroup performance, monitoring with PSI / CSI, and CI on every push.
 
 ## Quick start
 
@@ -39,7 +39,7 @@ Requires Python 3.12. Docker is optional.
 ```bash
 python -m venv .venv
 source .venv/bin/activate            # Windows: .venv\Scripts\Activate.ps1
-python -m pip install -e ".[api,dev]"
+python -m pip install -e ".[api,dev,app]"
 python -m pre_commit install         # hooks on commit, tests on push
 ```
 
@@ -59,6 +59,14 @@ python -m alembic upgrade head
 python -m uvicorn scorecard.api.main:app --port 8000
 # open http://127.0.0.1:8000/docs
 ```
+
+**Underwriter what-if app (simulation only, records nothing)**
+
+```bash
+python -m streamlit run app/streamlit_app.py     # http://127.0.0.1:8501
+```
+
+Enter an application to see the score, PD, outcome, decline reasons and the points behind each feature. Then change fields to see how the score would move. For example, paying utilisation down from 0.95 to 0.25 adds 32 points to the README decline below, which is still short of the cutoff.
 
 **Run the full stack (Postgres) with Docker**
 
@@ -106,13 +114,14 @@ The same applicant with utilisation 0.25, age 45 and no late payments scores **5
 | [docs/architecture.md](docs/architecture.md) | Pipeline, scoring service, audit table, deployment, quality gates |
 | [docs/business_case.md](docs/business_case.md) | Policy outcome, Illustrative value, sensitivity, scorecard vs challenger, KPIs |
 | [docs/assumptions.md](docs/assumptions.md) | Every non-learned number with its source label, limitations, open risks |
-| [docs/decisions.md](docs/decisions.md) | Decision log D-001 to D-029: what, why, alternatives |
+| [docs/decisions.md](docs/decisions.md) | Decision log D-001 to D-030: what, why, alternatives |
 | [reports/model_card.md](reports/model_card.md) | Intended use, performance, subgroups, fairness, monitoring |
 | [reports/](reports/) | Generated reports for each pipeline stage |
 
 ## Project layout
 
 ```
+app/          Streamlit what-if app for underwriters (simulation only)
 configs/      config.yaml: seeds, thresholds, business inputs
 src/scorecard/
   data/       load, audit, clean, split
@@ -130,7 +139,7 @@ tests/        unit/, api/, integration/
 
 ## Tech stack
 
-Python 3.12, pandas, scikit-learn, LightGBM, FastAPI, Pydantic, SQLAlchemy, Alembic, Postgres, Docker, pytest, ruff, pre-commit, GitHub Actions.
+Python 3.12, pandas, scikit-learn, LightGBM, FastAPI, Pydantic, Streamlit, SQLAlchemy, Alembic, Postgres, Docker, pytest, ruff, pre-commit, GitHub Actions.
 
 ## Note on development environment
 

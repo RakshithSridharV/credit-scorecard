@@ -840,7 +840,7 @@ owner), *Open* (still to be resolved), or *Required* (work that must happen late
 ---
 
 ## D-029 Model card with subgroup performance; README and data guide
-*Proposed, 2026-11-21.*
+*Approved, 2026-11-21. Subgroups on valid; 18-29 approval ratio disclosed as R-11.*
 
 - **What.** [reports/model_card.md](../reports/model_card.md) follows Mitchell et al. (2019) and
   adds validator items: intended and out-of-scope use, data, features, test performance,
@@ -872,3 +872,52 @@ owner), *Open* (still to be resolved), or *Required* (work that must happen late
   - Removing `age` now: a policy choice. Its approval impact should be measured first, so it is
     left to the owner.
 - **Open risks.** The model card is hand-written (see D-028). Subgroups by protected class are untested.
+
+---
+
+## D-030 Underwriter what-if app: Streamlit on the scoring core, simulation only
+*Proposed, 2026-11-21.*
+
+- **What.** `app/streamlit_app.py` (`make app`, http://127.0.0.1:8501). Credit staff enter an
+  application and see:
+  - the score, PD and outcome;
+  - the decline reasons as they would appear on the notice;
+  - where each point comes from.
+
+  They then pick fields to change and see the new score, PD and outcome side by side, with the
+  per-feature point changes. A new core method, `ScoringService.breakdown()`, returns the value,
+  bin, points, typical points and difference per scored feature. Its points sum **exactly** to the
+  score.
+- **Design rules.**
+  1. **Same core as the API.** The app calls `ScoringService`, so its numbers cannot drift from
+     live decisions. The model is loaded once (`st.cache_resource`) and verified against the
+     test lock.
+  2. **Simulation only.** Nothing is written to the audit log, and a banner says so. Decisions
+     have one channel (`POST /score`), so every real decision has exactly one record. A
+     what-if must never be mistaken for one.
+  3. **Input bounds mirror the API's rules** (age 18+, non-negative counts, "not reported"
+     only for income and dependents). The core still validates.
+- **Dependencies.** A separate `app` extra (`streamlit==1.67.0`, `pyarrow==23.0.1`), so the API
+  image does not include Streamlit. pyarrow is pinned to 23 because later releases require
+  NumPy 2, and core pins NumPy 1.26 (Smart App Control). CI installs the extra, so the app tests
+  run rather than skip.
+- **Result.**
+  - 8 new tests: 4 for `breakdown`, and 4 that run the real app headless with Streamlit's
+    `AppTest` against the lock-verified model.
+  - The app reproduces the README decline (487, reasons DLQ_90, UTIL_HIGH, DLQ_30, AGE).
+  - The utilisation what-if (0.95 -> 0.25) gives 519, +32 points, still a decline.
+  - Full suite 195 passed.
+- **Why.** Additive points are the scorecard's main advantage over the challenger, and a
+  breakdown that sums exactly to the score is how that advantage reaches an underwriter. What-if
+  answers the questions an applicant actually asks ("what would get me approved?") from the
+  model itself.
+- **Alternatives.**
+  - Calling the API over HTTP: needs the server and database running, and would write audit
+    records for simulations.
+  - A React front end: more work, with no modelling benefit for a demo.
+  - SHAP-style explanations: unnecessary when the model is additive.
+- **Open risks.**
+  - No login. Run it locally only; a deployed version would need authentication, since it
+    reveals the scorecard's points.
+  - "What would get me approved" is not counter-offer advice: changes must be real changes in
+    the applicant's situation, not edits to the form.
