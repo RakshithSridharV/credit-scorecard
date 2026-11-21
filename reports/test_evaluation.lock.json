@@ -1,0 +1,14 @@
+{
+  "runs": [
+    {
+      "at": "2026-11-20T13:46:48+00:00",
+      "fingerprints": {
+        "scorecard": "27f4de0069b87a55ee67667fa225dea6819b5135297959c796f7f6b975075114",
+        "challenger": "818cb921d3424b009d7eee74363fc6b044ebc030678c33d90d946d9f28a632df",
+        "reason_reference": "cfde8478851121b29c10111505af20a57ea6a2249efcae8cb8a7fb12fb72f6e3",
+        "config": "fa3e87ffb3442d9773df726ff3ccf2784f08770b311d7ce1eb71d31f0ea86c9f",
+        "test_data": "59f55770fddea973bbfffec33a00e8ef880e2bb57f2e87d181b53d13f622b3b4"
+      }
+    }
+  ]
+}
