@@ -177,6 +177,25 @@ def drop_one_table(
     )
 
 
+def gates_table(
+    iv: pd.Series,
+    vif_all: pd.Series,
+    after_iv: Sequence[str],
+    after_vif: Sequence[str],
+    selected: Sequence[str],
+) -> pd.DataFrame:
+    """One row per feature, highest IV first, with the outcome of every gate.
+
+    Flags are matched by feature NAME (`isin`). Building them as plain lists and
+    letting pandas align the Series alphabetically put them on the wrong rows.
+    """
+    t = pd.DataFrame({"iv": iv, "vif_all": vif_all}).reindex(iv.sort_values(ascending=False).index)
+    t["passed_iv"] = t.index.isin(after_iv)
+    t["passed_redundancy"] = t.index.isin(after_vif)
+    t["selected"] = t.index.isin(selected)
+    return t
+
+
 # --------------------------------------------------------------------------- #
 # CLI
 # --------------------------------------------------------------------------- #
@@ -215,15 +234,7 @@ def main() -> None:
     )
 
     short = {f: f"f{i}" for i, f in enumerate(FEATURES, 1)}
-    gates = pd.DataFrame(
-        {
-            "iv": iv,
-            "vif_all": vif(woe),
-            "passed_iv": [f in after_iv for f in iv.index],
-            "passed_redundancy": [f in after_vif for f in iv.index],
-            "selected": [f in selected for f in iv.index],
-        }
-    )
+    gates = gates_table(iv, vif(woe), after_iv, after_vif, selected)
     report = resolve_path(cfg["reports"]["feature_selection"])
     report.write_text(
         "\n".join(

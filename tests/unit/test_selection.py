@@ -10,6 +10,7 @@ from sklearn.model_selection import StratifiedKFold
 from scorecard.features.selection import (
     backward_elimination,
     correlation_filter,
+    gates_table,
     iv_filter,
     vif,
     vif_filter,
@@ -78,3 +79,15 @@ def test_backward_elimination_drops_pure_noise_and_keeps_signal():
     assert sorted(kept) == ["signal_1", "signal_2"]
     assert history["dropped"].iloc[0] == "noise"
     assert history["dropped"].iloc[-1] == "(stop)"
+
+
+def test_gates_table_matches_flags_by_name_not_position():
+    # IV order (b, c, a) differs from alphabetical order: the old report bug
+    # attached the flags by position after pandas sorted the rows alphabetically.
+    iv = pd.Series({"b": 0.9, "c": 0.5, "a": 0.1})
+    vif_all = pd.Series({"a": 1.0, "b": 2.0, "c": 3.0})
+    t = gates_table(iv, vif_all, after_iv=["b", "c", "a"], after_vif=["b", "c"], selected=["c"])
+    assert list(t.index) == ["b", "c", "a"]  # highest IV first
+    assert t.loc["c", "selected"] and not t.loc["b", "selected"] and not t.loc["a", "selected"]
+    assert list(t["passed_redundancy"]) == [True, True, False]
+    assert t.loc["a", "vif_all"] == 1.0  # numeric columns follow the name too
