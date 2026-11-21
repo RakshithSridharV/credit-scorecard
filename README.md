@@ -30,7 +30,7 @@ Money figures are **Illustrative**: they depend on assumed exposure, margin and 
 - **One decision path.** The API uses the same `clean()` as training. A skew test shows identical scores offline and online.
 - **Fail-safe serving.** Strict input contract (422 errors that never echo applicant data), fail-fast start-up, and fail-closed audit writes: no record means no decision.
 - **Least-privilege deployment.** Docker image runs as a non-root user. A migrate-once job manages the schema. The API's Postgres role can only `SELECT` and `INSERT`.
-- **Governed.** 30 recorded decisions with alternatives, a [model card](reports/model_card.md) including subgroup performance, monitoring with PSI / CSI, and CI on every push.
+- **Governed.** 32 recorded decisions with alternatives, a [model card](reports/model_card.md) including subgroup performance, monitoring with PSI / CSI, and CI on every push.
 
 ## Quick start
 
@@ -111,11 +111,13 @@ The same applicant with utilisation 0.25, age 45 and no late payments scores **5
 
 | Document | Contents |
 |---|---|
+| [docs/report/credit_scorecard_report.pdf](docs/report/credit_scorecard_report.pdf) | **Start here.** 16-page model development report: the whole project in one document |
 | [docs/architecture.md](docs/architecture.md) | Pipeline, scoring service, audit table, deployment, quality gates |
 | [docs/business_case.md](docs/business_case.md) | Policy outcome, Illustrative value, sensitivity, scorecard vs challenger, KPIs |
 | [docs/assumptions.md](docs/assumptions.md) | Every non-learned number with its source label, limitations, open risks |
-| [docs/decisions.md](docs/decisions.md) | Decision log D-001 to D-030: what, why, alternatives |
+| [docs/decisions.md](docs/decisions.md) | Decision log D-001 to D-032: what, why, alternatives |
 | [reports/model_card.md](reports/model_card.md) | Intended use, performance, subgroups, fairness, monitoring |
+| [reports/age_ablation.md](reports/age_ablation.md) | Experiment: the scorecard without `age`, and who bears the cost |
 | [reports/](reports/) | Generated reports for each pipeline stage |
 
 ## Project layout
@@ -127,7 +129,7 @@ src/scorecard/
   data/       load, audit, clean, split
   features/   binning, WoE, IV, selection
   models/     scorecard, LightGBM challenger
-  evaluation/ metrics, calibration, cutoff, subgroups, PSI/CSI
+  evaluation/ metrics, calibration, cutoff, subgroups, age experiment, PSI/CSI
   explain/    reason codes
   pipelines/  train (rebuild + verify), evaluate (one-time test run)
   api/        scoring core, FastAPI app, audit-log database
