@@ -60,7 +60,7 @@ def test_no_training_serving_skew_on_valid(service):
 
 @needs_model
 def test_income_zero_vs_reported_income_example(service):
-    """The D-023 walkthrough example: identical applicants except income."""
+    """The D-023 worked example: identical applicants except income."""
     base = {
         "RevolvingUtilizationOfUnsecuredLines": 0.3,
         "age": 45,

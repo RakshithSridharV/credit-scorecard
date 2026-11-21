@@ -43,7 +43,7 @@ challenger:            # D-017. LightGBM benchmark; tuned by CV on train, compar
     min_child_samples: [100, 400]   # >= 100 rows per leaf: no leaf rests on a handful of bads
   n_bootstrap: 1000     # paired bootstrap on valid for the AUC gap's uncertainty
 
-cutoff:                # D-018. Business inputs, NOT learned from data. Labels per CLAUDE.md.
+cutoff:                # D-018. Business inputs, NOT learned from data. Each number is labelled by source.
   ead: 5000             # Illustrative: exposure per approved account, USD
   annual_margin: 0.05   # Assumption: yearly income after funding and servicing costs, before credit losses
   horizon_years: 2      # Data fact: the target is 90+ days past due within 2 years
