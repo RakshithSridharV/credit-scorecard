@@ -745,7 +745,7 @@ owner), *Open* (still to be resolved), or *Required* (work that must happen late
     commands, and the Makefile recipes run as written in CI (Linux).
 
 ## D-027 CI and pre-commit: one rule set everywhere, a green run must mean the tests ran, byte-exact artifacts in git
-*Proposed, 2026-11-21. Awaiting owner approval.*
+*Approved, 2026-11-21. One rule set locally and in CI; missing artifacts fail; artifacts stored byte-exact.*
 
 - **What.**
   - **`.pre-commit-config.yaml`** has 12 hooks.
@@ -819,7 +819,7 @@ owner), *Open* (still to be resolved), or *Required* (work that must happen late
 ---
 
 ## D-028 Documentation: architecture, assumptions register, business case
-*Proposed, 2026-11-21.*
+*Approved, 2026-11-21. Figures copied from generated reports; update the documents on any rebuild.*
 
 - **What.** Three documents in `docs/`, written for reviewers who have not read the code:
   - [architecture.md](architecture.md): the offline pipeline, the scoring service, the audit table,
@@ -836,3 +836,39 @@ owner), *Open* (still to be resolved), or *Required* (work that must happen late
   but hard to review); a single long README (mixes setup instructions with governance content).
 - **Open risks.** The documents are written by hand. If the model is rebuilt with different
   results, they must be updated too. Generating them from the reports would remove this risk.
+
+---
+
+## D-029 Model card with subgroup performance; README and data guide
+*Proposed, 2026-11-21.*
+
+- **What.** [reports/model_card.md](../reports/model_card.md) follows Mitchell et al. (2019) and
+  adds validator items: intended and out-of-scope use, data, features, test performance,
+  calibration, subgroups, fairness, limitations, monitoring. A new module,
+  `python -m scorecard.evaluation.subgroups`, writes `reports/subgroup_performance.md` and is
+  part of the training pipeline. It reports, for each group:
+  - size, bad rate and mean PD;
+  - AUC (left blank under 30 bads);
+  - approval rate and goods declined at cutoff 549;
+  - approval ratio to the best group (four-fifths rule, **Benchmark**).
+
+  Groups are age band (split at 62, the Regulation B threshold) and income reported / not.
+  `README.md` and `data/README.md` are rewritten.
+- **Data used.** **Valid**, not test: test was scored once (D-020), and a new analysis on it would be
+  a second look. The subgroup numbers do not change any model choice.
+- **Findings.**
+  - Ages 18-29: approval ratio **0.79** (under 0.8), AUC 0.795. The gap mostly follows observed
+    risk (bad rate 11.2% vs 2.9% for 62+). The PD over-prediction (12.18% vs 11.16%) is about 1.2
+    standard errors, within noise. Added as risk R-11.
+  - Income not reported: PD 4.88% vs bad rate 5.50% (about -1.9 standard errors, borderline
+    under-prediction). This supports the income-verification policy note (R-3).
+  - Ages 62+: highest approval (96.0%), so they are not disadvantaged.
+- **Why.** A model can perform well overall and badly for one group. Validators and fair-lending
+  reviews ask for exactly these tables. Generating them in code keeps them reproducible.
+- **Alternatives.**
+  - Subgroups on test: more independent, but reopens the locked set.
+  - Fairness metrics on protected classes: race, sex and marital status are not in the data. A
+    lender would use proxy methods (BISG).
+  - Removing `age` now: a policy choice. Its approval impact should be measured first, so it is
+    left to the owner.
+- **Open risks.** The model card is hand-written (see D-028). Subgroups by protected class are untested.

@@ -41,7 +41,7 @@ The cutoff moves by about 20 points for a 2x change in loss per bad. Any real us
 
 | Item | Value | Label | Source and rationale |
 |---|---|---|---|
-| Base score | 600 | Assumption (industry convention) | Siddiqi, *Credit Risk Scorecards*. A scale convention, not learned |
+| Base score | 600 | Assumption (industry convention) | Siddiqi, *Intelligent Credit Scoring*. A scale convention, not learned |
 | Base odds | 50:1 good:bad at 600 | Assumption (industry convention) | Same source |
 | Points to double the odds (PDO) | 20 | Assumption (industry convention) | Same source |
 | PD floor | 0.05% | Benchmark | Basel III minimum PD for retail exposures |
@@ -123,3 +123,4 @@ Each rule was checked against the data audit ([reports/data_audit.md](../reports
 | R-8 | Artifact hashes include Windows line endings | Stored byte-for-byte via `.gitattributes`. Writing LF or canonical JSON would need a re-lock (a governance event) |
 | R-9 | The skew test needs the data, so it cannot run in CI | Run `make check` locally before any release |
 | R-10 | The image includes training-only libraries (906 MB) | Split `train` and `serve` dependency groups |
+| R-11 | Approval ratio for ages 18-29 is 0.79, just under the four-fifths screening threshold (valid) | The gap mostly follows observed risk (bad rate 11.2% vs 2.9% for 62+). Disclosed in the model card. A lender would review it, e.g. by measuring the impact of removing `age` |
