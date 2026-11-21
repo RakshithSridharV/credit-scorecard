@@ -37,6 +37,7 @@ flowchart LR
 | Scorecard | `scorecard.models.scorecard` | `models/scorecard.json` (encoder, points, master scale) |
 | Challenger | `scorecard.models.challenger` | `models/challenger_lgbm.txt` |
 | Cutoff | `scorecard.evaluation.cutoff` | `reports/cutoff_strategy.md` |
+| Age-removal experiment | `scorecard.evaluation.age_ablation` | `reports/age_ablation.md` (evidence only, D-032) |
 | Reason codes | `scorecard.explain.reason_codes` | `models/reason_reference.json` |
 | Monitoring | `scorecard.evaluation.psi` | `models/monitoring_baseline.json` |
 | Test evaluation | `scorecard.pipelines.evaluate` | `reports/test_evaluation.md` and `.lock.json` |

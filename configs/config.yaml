@@ -54,6 +54,9 @@ reasons:               # D-019. Adverse-action reason codes from the points tabl
   max_reasons: 4        # Regulation B commentary: more than four reasons is unlikely to help
   min_points_lost: 5    # Assumption: a quarter of the PDO (about 19% higher odds of bad) to count
 
+fairness:              # D-032. Age-removal experiment (risk R-11), on valid only.
+  n_bootstrap: 1000     # paired resamples of valid rows for the age-band intervals
+
 evaluation:            # D-020. The one-time test-set evaluation.
   n_bootstrap: 1000     # resamples of test rows for confidence intervals
   lock: reports/test_evaluation.lock.json  # proof test was scored once; reruns need --force
@@ -89,6 +92,7 @@ reports:
   challenger: reports/challenger.md
   cutoff: reports/cutoff_strategy.md
   subgroups: reports/subgroup_performance.md
+  age_ablation: reports/age_ablation.md
   reason_codes: reports/reason_codes.md
   test_evaluation: reports/test_evaluation.md
   monitoring: reports/monitoring.md

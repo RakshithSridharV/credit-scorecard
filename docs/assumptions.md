@@ -106,7 +106,7 @@ Each rule was checked against the data audit ([reports/data_audit.md](../reports
   The ranking of cutoffs is meaningful; the dollar amounts are Illustrative.
 - **One time period.** Train, valid and test are random splits of one snapshot. That is why their PSI is near zero (test score PSI 0.0009). Out-of-time performance is unknown.
 - **US data and US regulation.** The reason codes follow ECOA / Regulation B. Other jurisdictions have different adverse-action and fairness rules.
-- **Age is a model feature.** Regulation B allows age in an empirically derived, demonstrably sound system, provided applicants 62+ are not disadvantaged. They receive at least as many age points as the best under-62 group (check passed, D-019). A lender may still choose to remove age as a policy decision.
+- **Age is a model feature.** Regulation B allows age in an empirically derived, demonstrably sound system, provided applicants 62+ are not disadvantaged. They receive at least as many age points as the best under-62 group (check passed, D-019). A lender may still choose to remove age as a policy decision. The age-removal experiment (D-032) shows what that would cost and who would bear it.
 - **The challenger is stronger but not deployed.** LightGBM ranks better (test AUC 0.870 vs 0.860; the gap is significant). The scorecard stays in production for transparency, stable reason codes and ease of validation (D-017). The challenger is the benchmark for shadow monitoring.
 
 ## 8. Open risks
@@ -123,4 +123,4 @@ Each rule was checked against the data audit ([reports/data_audit.md](../reports
 | R-8 | Artifact hashes include Windows line endings | Stored byte-for-byte via `.gitattributes`. Writing LF or canonical JSON would need a re-lock (a governance event) |
 | R-9 | The skew test needs the data, so it cannot run in CI | Run `make check` locally before any release |
 | R-10 | The image includes training-only libraries (906 MB) | Split `train` and `serve` dependency groups |
-| R-11 | Approval ratio for ages 18-29 is 0.79, just under the four-fifths screening threshold (valid) | The gap mostly follows observed risk (bad rate 11.2% vs 2.9% for 62+). Disclosed in the model card. A lender would review it, e.g. by measuring the impact of removing `age` |
+| R-11 | Approval ratio for ages 18-29 is 0.79, just under the four-fifths screening threshold (valid; 95% CI 0.770 to 0.816) | **Tested (D-032).** Removing `age` lifts the ratio to 0.834 for 0.0035 AUC, but overstates the risk of applicants 62+ by 32% and cuts their approval by 2.4 points. Age is kept; the evidence goes to the owner |
