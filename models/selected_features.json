@@ -1,0 +1,19 @@
+{
+  "features": [
+    "RevolvingUtilizationOfUnsecuredLines",
+    "NumberOfTimes90DaysLate",
+    "NumberOfTime30-59DaysPastDueNotWorse",
+    "NumberOfTime60-89DaysPastDueNotWorse",
+    "age",
+    "DebtRatio",
+    "NumberRealEstateLoansOrLines"
+  ],
+  "settings": {
+    "min_iv": 0.02,
+    "max_corr": 0.7,
+    "max_vif": 5,
+    "cv_folds": 5,
+    "min_auc_loss": 0.0005
+  },
+  "seed": 42
+}

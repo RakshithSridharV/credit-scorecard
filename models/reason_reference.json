@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "method": "train_mean_points",
+  "reference": {
+    "RevolvingUtilizationOfUnsecuredLines": 89.06766731111725,
+    "NumberOfTimes90DaysLate": 83.68811131534586,
+    "NumberOfTime30-59DaysPastDueNotWorse": 84.0864770140668,
+    "NumberOfTime60-89DaysPastDueNotWorse": 82.66423489747521,
+    "age": 81.85132239354661,
+    "DebtRatio": 81.19748759511995,
+    "NumberRealEstateLoansOrLines": 80.75352146210916
+  }
+}
