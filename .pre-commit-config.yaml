@@ -1,0 +1,92 @@
+# Pre-commit hooks (D-027). Install once:  python -m pre_commit install
+# Then they run on every `git commit` (fast checks) and `git push` (tests).
+# CI runs the same file (`pre-commit run --all-files`), so local and CI rules never drift.
+default_install_hook_types: [pre-commit, pre-push]
+default_stages: [pre-commit]
+
+# Generated, fingerprinted artifacts are NEVER rewritten by a hook: adding a final
+# newline to models/scorecard.json changes its SHA-256, and the API then refuses
+# to start because the model no longer matches the test lock (D-020, D-023).
+# data/ is NOT excluded here: the no-data-in-git hook below must see it.
+exclude: ^(models|reports)/
+
+# Every hook runs from the project's own pinned environment (language: system,
+# versions in pyproject's `dev` extra), not from environments pre-commit downloads:
+#   * one version of each tool on the laptop, in CI and in pre-commit;
+#   * Smart App Control blocks the .exe launchers in pre-commit's own environments
+#     ("WinError 4551"); `python -m ...` runs through the already-trusted python.exe.
+# The file-hygiene hooks are the standard pre-commit-hooks 6.0.0, called as modules.
+repos:
+  - repo: local
+    hooks:
+      - id: check-added-large-files
+        name: check for added large files
+        entry: python -m pre_commit_hooks.check_added_large_files --maxkb=600
+        language: system  # 600 KB: the largest real file is the 383 KB challenger model
+      - id: detect-private-key
+        name: detect private key
+        entry: python -m pre_commit_hooks.detect_private_key
+        language: system
+        types: [text]
+      - id: check-merge-conflict
+        name: check for merge conflicts
+        entry: python -m pre_commit_hooks.check_merge_conflict
+        language: system
+        types: [text]
+      - id: check-yaml
+        name: check yaml
+        entry: python -m pre_commit_hooks.check_yaml
+        language: system
+        types: [yaml]
+      - id: check-toml
+        name: check toml
+        entry: python -m pre_commit_hooks.check_toml
+        language: system
+        types: [toml]
+      - id: end-of-file-fixer
+        name: fix end of files
+        entry: python -m pre_commit_hooks.end_of_file_fixer
+        language: system
+        types: [text]
+      - id: trailing-whitespace
+        name: trim trailing whitespace
+        entry: python -m pre_commit_hooks.trailing_whitespace_fixer --markdown-linebreak-ext=md
+        language: system
+        types: [text]
+      - id: mixed-line-ending
+        name: mixed line ending
+        entry: python -m pre_commit_hooks.mixed_line_ending --fix=lf
+        language: system
+        types: [text]
+
+      - id: ruff-check
+        name: ruff check
+        entry: ruff check --fix
+        language: system
+        types: [python]
+      - id: ruff-format
+        name: ruff format
+        entry: ruff format
+        language: system
+        types: [python]
+
+      # The training data must never enter git: Kaggle's licence forbids
+      # redistribution, and data/ is git-ignored, but `git add -f` gets past that.
+      - id: no-data-in-git
+        name: data files must not be committed
+        entry: "data files cannot be committed (licence; see data/README.md)"
+        language: fail
+        files: ^data/(raw|interim|processed|audit)/.+(?<!\.gitkeep)$
+      - id: no-env-file
+        name: .env must not be committed
+        entry: ".env holds secrets; commit .env.example instead"
+        language: fail
+        files: (^|/)\.env$
+
+      - id: pytest
+        name: pytest (on push)
+        entry: python -m pytest -q -p no:warnings
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]

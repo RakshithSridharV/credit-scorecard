@@ -1,6 +1,7 @@
 data/raw/*
 data/interim/*
 data/processed/*
+data/audit/
 !data/**/.gitkeep
 .env
 .venv/
@@ -11,3 +12,7 @@ __pycache__/
 .ipynb_checkpoints/
 *.egg-info/
 mlruns/
+
+# Python build leftovers
+build/
+*.egg-info/

@@ -1,0 +1,93 @@
+# Project configuration. Paths are relative to the repository root.
+# Column names and schema live in code (src/scorecard/data/load.py), not here:
+# config holds things you might change between runs, schema does not change.
+
+data:
+  raw_train: data/raw/cs-training.csv   # never modified by any code
+  interim_dir: data/interim             # cleaned splits
+  processed_dir: data/processed         # raw splits (train/valid/test)
+
+split:
+  seed: 42            # fixed so every run produces the same three files
+  valid_size: 0.15    # share of ALL rows (not of what is left after test)
+  test_size: 0.15
+
+binning:              # D-014. Learned on train only.
+  fine_bins: 20         # starting quantile bins per feature, before merging
+  min_bin_share: 0.02   # every numeric bin keeps >= 2% of train rows (about 2,100)
+  max_bins: 6           # numeric bins per feature after merging (Missing not counted)
+  smoothing: 0.5        # added to each bin's good/bad count so WoE is never ln(0)
+
+selection:             # D-015. Train only; valid is not used to choose.
+  min_iv: 0.02          # below this a feature is "not useful" (Siddiqi rule of thumb)
+  max_corr: 0.7         # of a pair of WoE features above this, keep the higher-IV one
+  max_vif: 5            # multi-feature overlap check after the pairwise one
+  cv_folds: 5
+  min_auc_loss: 0.0005  # a feature stays only if dropping it costs >= 0.0005 CV AUC
+
+scorecard:             # D-016. Score scale: a convention, not learned from data.
+  base_score: 600       # score at which the odds are base_odds
+  base_odds: 50         # good:bad odds of 50:1 at 600
+  pdo: 20               # every 20 points doubles the odds
+  pd_floor: 0.0005      # Benchmark: Basel III minimum PD for retail exposures (0.05%)
+
+challenger:            # D-017. LightGBM benchmark; tuned by CV on train, compared on valid.
+  learning_rate: 0.05
+  max_rounds: 3000      # upper bound; early stopping picks the real number per grid point
+  early_stopping: 100   # stop when CV AUC has not improved for 100 rounds
+  feature_fraction: 0.8 # each tree sees 80% of features: decorrelates trees
+  bagging_fraction: 0.8 # each tree sees 80% of rows
+  lambda_l2: 1.0        # mild L2 on leaf values
+  grid:                 # small on purpose: 6 points, the gains beyond this are noise-sized
+    num_leaves: [7, 15, 31]
+    min_child_samples: [100, 400]   # >= 100 rows per leaf: no leaf rests on a handful of bads
+  n_bootstrap: 1000     # paired bootstrap on valid for the AUC gap's uncertainty
+
+cutoff:                # D-018. Business inputs, NOT learned from data. Labels per CLAUDE.md.
+  ead: 5000             # Illustrative: exposure per approved account, USD
+  annual_margin: 0.05   # Assumption: yearly income after funding and servicing costs, before credit losses
+  horizon_years: 2      # Data fact: the target is 90+ days past due within 2 years
+  lgd: 0.75             # Assumption: unsecured consumer credit recovers little after default
+  sensitivity: [0.5, 2.0]  # multiply loss per bad by these to see how the cutoff moves
+
+reasons:               # D-019. Adverse-action reason codes from the points table.
+  max_reasons: 4        # Regulation B commentary: more than four reasons is unlikely to help
+  min_points_lost: 5    # Assumption: a quarter of the PDO (about 19% higher odds of bad) to count
+
+evaluation:            # D-020. The one-time test-set evaluation.
+  n_bootstrap: 1000     # resamples of test rows for confidence intervals
+  lock: reports/test_evaluation.lock.json  # proof test was scored once; reruns need --force
+
+monitoring:            # D-021. Stability of the population the model scores.
+  score_bands: 10       # train score deciles, frozen in the baseline
+  share_floor: 0.0001   # empty band -> this share, so ln(0) never happens
+  investigate: 0.10     # Benchmark: industry rule of thumb (Siddiqi), PSI 0.10-0.25 = look into it
+  act: 0.25             # Benchmark: same source, PSI > 0.25 = significant shift
+  approval_investigate: 0.03  # Assumption: approval rate moved > 3 points from train
+  approval_act: 0.06          # Assumption: > 6 points
+
+database:              # D-025. Decision audit log (append-only).
+  # Local default. The SCORECARD_DB_URL environment variable overrides it (Postgres in
+  # Docker), so credentials never live in this file. Relative SQLite paths are from the repo root.
+  url: sqlite:///data/audit/decisions.db
+
+artifacts:
+  woe_encoder: models/woe_encoder.json   # fitted bins + WoE, loaded by the API
+  selected_features: models/selected_features.json
+  scorecard: models/scorecard.json      # self-contained: encoder + points
+  challenger: models/challenger_lgbm.txt  # LightGBM native text format (benchmark only)
+  reason_reference: models/reason_reference.json  # train mean points per feature (D-019)
+  monitoring_baseline: models/monitoring_baseline.json  # train score bands + feature shares
+
+reports:
+  data_audit: reports/data_audit.md
+  split_summary: reports/split_summary.md
+  clean_summary: reports/clean_summary.md
+  woe_summary: reports/woe_summary.md
+  feature_selection: reports/feature_selection.md
+  scorecard_model: reports/scorecard_model.md
+  challenger: reports/challenger.md
+  cutoff: reports/cutoff_strategy.md
+  reason_codes: reports/reason_codes.md
+  test_evaluation: reports/test_evaluation.md
+  monitoring: reports/monitoring.md

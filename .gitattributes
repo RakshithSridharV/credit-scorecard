@@ -1,0 +1,14 @@
+# Line endings (D-027).
+# Every text file is stored in git with LF, whatever the OS that edits it.
+* text=auto eol=lf
+
+# Generated, fingerprinted outputs are stored byte-for-byte: NO conversion.
+# Their SHA-256 values in the test lock were computed over the exact bytes written
+# on the dev laptop (CRLF). Converting them on commit would change those bytes, and
+# every fresh clone (CI, Docker builds) would then fail the model check (D-020, D-023).
+models/** -text
+reports/** -text
+
+# Shell scripts run inside Linux containers: CRLF would break them ("/bin/sh^M").
+*.sh text eol=lf
+Dockerfile text eol=lf
