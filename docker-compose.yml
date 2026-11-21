@@ -1,0 +1,51 @@
+# Local production-like stack (D-026): Postgres -> one-off migrate job -> API.
+#   cp .env.example .env   (then edit)   ->   make up   ->   make smoke   ->   make down
+name: scorecard
+
+x-image: &image
+  image: scorecard-api:${IMAGE_TAG:-dev}
+  build: .
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: scorecard
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      SCORECARD_OWNER_PASSWORD: ${SCORECARD_OWNER_PASSWORD:?set it in .env}
+      SCORECARD_APP_PASSWORD: ${SCORECARD_APP_PASSWORD:?set it in .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/postgres/10-roles.sh:/docker-entrypoint-initdb.d/10-roles.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d scorecard"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  # Runs ONCE per deploy, before any API container starts, with the role that may
+  # change the schema. Replicas never race each other to migrate.
+  migrate:
+    <<: *image
+    command: ["python", "-m", "alembic", "upgrade", "head"]
+    environment:
+      SCORECARD_DB_URL: postgresql+psycopg://scorecard_owner:${SCORECARD_OWNER_PASSWORD}@db:5432/scorecard
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    <<: *image
+    environment:
+      SCORECARD_DB_URL: postgresql+psycopg://scorecard_app:${SCORECARD_APP_PASSWORD}@db:5432/scorecard
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    ports:
+      - "127.0.0.1:8000:8000"  # localhost only: no auth yet, so never exposed to the network
+    restart: unless-stopped
+
+volumes:
+  pgdata:

@@ -1,0 +1,12 @@
+# Allow-list (D-026): the image gets ONLY what serving needs. Anything not listed
+# (data/, .env, .git, notebooks, tests, the challenger model) can never leak in.
+*
+!alembic.ini
+!configs/
+!migrations/
+!src/
+!models/scorecard.json
+!models/reason_reference.json
+!reports/test_evaluation.lock.json
+!requirements/serve.lock
+**/__pycache__
