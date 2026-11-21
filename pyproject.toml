@@ -21,6 +21,9 @@ api = [
   "sqlalchemy==2.0.58", "alembic==1.20.1",
 ]
 postgres = ["psycopg[binary]==3.3.9"]  # Postgres driver, used inside the Docker image (D-026)
+# Underwriter what-if app (D-030). Separate extra: the API image never installs it.
+# pyarrow 23, not newer: later releases require NumPy 2, and core pins NumPy 1.26.
+app = ["streamlit==1.67.0", "pyarrow==23.0.1"]
 # Pinned so pre-commit, CI and the laptop run identical tool versions (D-027).
 dev = [
   "pytest==9.2.0", "ruff==0.17.5", "pre-commit==4.7.0", "pre-commit-hooks==6.0.0",

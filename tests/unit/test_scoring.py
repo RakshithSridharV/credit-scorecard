@@ -167,3 +167,30 @@ def test_required_and_optional_cover_every_raw_feature():
     from scorecard.api.scoring import OPTIONAL, REQUIRED
 
     assert sorted((*REQUIRED, *OPTIONAL)) == sorted(FEATURES)
+
+
+# ------------------------------------------------------------------ breakdown (D-030)
+def test_breakdown_points_add_up_to_the_score(applicant, service):
+    for body in (applicant(), applicant(**{UTIL: 1.1, D90: 3, DEBT: 1.4, AGE: 22})):
+        table = service.breakdown(body)
+        assert list(table.index) == service.scorecard.features
+        assert table["points"].sum() == service.score(body).score  # exact, not approximate
+
+
+def test_breakdown_compares_with_the_reason_reference(applicant, service):
+    table = service.breakdown(applicant())
+    for f, row in table.iterrows():
+        assert row["typical_points"] == pytest.approx(service.reference[f], abs=0.05)
+        assert row["vs_typical"] == pytest.approx(row["points"] - service.reference[f], abs=0.05)
+
+
+def test_breakdown_shows_cleaned_values_and_the_missing_bin(applicant, service):
+    # Income 0 is a placeholder (D-003): DebtRatio becomes missing, as in training.
+    table = service.breakdown(applicant(**{INCOME: 0}))
+    assert pd.isna(table.loc[DEBT, "value"])
+    assert table.loc[DEBT, "bin"] == "Missing"
+
+
+def test_breakdown_validates_like_score(applicant, service):
+    with pytest.raises(InvalidApplicant):
+        service.breakdown(applicant(age=17))

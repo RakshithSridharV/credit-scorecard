@@ -2,7 +2,7 @@
 # Windows: run from Git Bash, or install make (e.g. `winget install GnuWin32.Make`).
 PY ?= python
 
-.PHONY: help hooks install train rebuild evaluate rehearse migrate serve lock image up down smoke test lint format check
+.PHONY: help hooks install train rebuild evaluate rehearse migrate serve app lock image up down smoke test lint format check
 
 help:
 	@echo "install   editable install with dev tools"
@@ -13,6 +13,7 @@ help:
 	@echo "evaluate  ONE-TIME test evaluation (refuses a second run)"
 	@echo "migrate   bring the audit database to the latest schema (alembic upgrade head)"
 	@echo "serve     run the scoring API on http://127.0.0.1:8000 (docs at /docs)"
+	@echo "app       underwriter what-if app on http://127.0.0.1:8501 (simulation only)"
 	@echo "lock      re-resolve the Docker dependency lock (requirements/serve.lock)"
 	@echo "image     build the API image"
 	@echo "up        start Postgres + migrate + API in Docker (needs .env)"
@@ -23,7 +24,7 @@ help:
 	@echo "check     lint + test (what CI runs)"
 
 install:
-	$(PY) -m pip install -e ".[api,dev]"
+	$(PY) -m pip install -e ".[api,dev,app]"
 
 hooks:
 	$(PY) -m pre_commit install
@@ -45,6 +46,9 @@ migrate:
 
 serve: migrate
 	$(PY) -m uvicorn scorecard.api.main:app --host 127.0.0.1 --port 8000
+
+app:
+	$(PY) -m streamlit run app/streamlit_app.py --server.address 127.0.0.1
 
 # ---- Docker (D-026) ------------------------------------------------------------
 # The lock is resolved INSIDE the same Linux image the API runs on, so the pins
@@ -76,11 +80,11 @@ test:
 	$(PY) -m pytest -q
 
 lint:
-	ruff check src tests migrations scripts
-	ruff format --check src tests migrations scripts
+	ruff check src tests migrations scripts app
+	ruff format --check src tests migrations scripts app
 
 format:
-	ruff check --fix src tests migrations scripts
-	ruff format src tests migrations scripts
+	ruff check --fix src tests migrations scripts app
+	ruff format src tests migrations scripts app
 
 check: lint test  # same as CI's first job, minus the pre-commit file-hygiene hooks

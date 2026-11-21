@@ -31,7 +31,13 @@ from scorecard.config import load_config, resolve_path
 from scorecard.data.clean import AGE, MIN_AGE, clean
 from scorecard.data.load import FEATURES, PAST_DUE_COLUMNS
 from scorecard.evaluation.cutoff import economics_from_config, policy_cutoff
-from scorecard.explain.reason_codes import code_texts, load_reference, top_reasons
+from scorecard.explain.reason_codes import (
+    applicant_points,
+    code_texts,
+    load_reference,
+    top_reasons,
+)
+from scorecard.features.binning import assign_bins, bin_labels
 from scorecard.integrity import sha256
 from scorecard.models.scorecard import Scorecard
 
@@ -226,6 +232,33 @@ class ScoringService:
                 )
             )
         return out
+
+    def breakdown(self, applicant: Applicant) -> pd.DataFrame:
+        """Where one applicant's score comes from: per scored feature, the cleaned
+        value, the bin it fell in, the points received, and the points of the
+        train-average applicant (the reason-code reference, D-019).
+
+        The points column always sums to `score(applicant).score`: the scorecard
+        is additive, so this is the exact explanation, not an approximation.
+        """
+        x = clean(validate(pd.DataFrame([dict(applicant)])))
+        points, _ = applicant_points(self.scorecard, x)
+        rows = []
+        for f in self.scorecard.features:
+            edges = self.scorecard.encoder_.features_[f].edges
+            value = x[f].iloc[0]
+            got = int(points[f].iloc[0])
+            rows.append(
+                {
+                    "feature": f,
+                    "value": float(value),  # NaN = missing after clean()
+                    "bin": bin_labels(edges)[int(assign_bins(x[f].to_numpy(float), edges)[0])],
+                    "points": got,
+                    "typical_points": round(self.reference[f], 1),
+                    "vs_typical": round(got - self.reference[f], 1),
+                }
+            )
+        return pd.DataFrame(rows).set_index("feature")
 
     def _reasons(self, row: pd.Series) -> tuple[ReasonItem, ...]:
         items = []
