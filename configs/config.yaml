@@ -88,6 +88,7 @@ reports:
   scorecard_model: reports/scorecard_model.md
   challenger: reports/challenger.md
   cutoff: reports/cutoff_strategy.md
+  subgroups: reports/subgroup_performance.md
   reason_codes: reports/reason_codes.md
   test_evaluation: reports/test_evaluation.md
   monitoring: reports/monitoring.md

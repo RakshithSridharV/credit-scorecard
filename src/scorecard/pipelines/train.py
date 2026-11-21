@@ -38,6 +38,7 @@ STAGES: list[tuple[str, str]] = [
     ("scorecard", "scorecard.models.scorecard"),
     ("challenger", "scorecard.models.challenger"),
     ("cutoff report", "scorecard.evaluation.cutoff"),
+    ("subgroup report", "scorecard.evaluation.subgroups"),
     ("reason reference", "scorecard.explain.reason_codes"),
     ("monitoring baseline", "scorecard.evaluation.psi"),
 ]
