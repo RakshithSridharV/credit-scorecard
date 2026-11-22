@@ -1020,7 +1020,7 @@ owner), *Open* (still to be resolved), or *Required* (work that must happen late
 ---
 
 ## D-033 D-009 duplicates check run; how the "test scored once" claim is evidenced
-*Open, 2026-11-22. Awaiting owner approval.*
+*Approved, 2026-11-22.*
 
 Three loose ends found in review: the duplicates check D-009 required was never run, the test
 lock's config hash matches no committed config, and notebook 01 had bugs.
