@@ -10,5 +10,27 @@
         "test_data": "59f55770fddea973bbfffec33a00e8ef880e2bb57f2e87d181b53d13f622b3b4"
       }
     }
+  ],
+  "addenda": [
+    {
+      "at": "2026-11-22T01:56:16+00:00",
+      "check": "D-009 duplicates",
+      "purpose": "sensitivity check required by D-009; nothing was tuned on test",
+      "report": "reports/duplicate_check.md",
+      "fingerprints": {
+        "scorecard": "27f4de0069b87a55ee67667fa225dea6819b5135297959c796f7f6b975075114",
+        "test_data": "59f55770fddea973bbfffec33a00e8ef880e2bb57f2e87d181b53d13f622b3b4"
+      }
+    },
+    {
+      "at": "2026-11-22T01:56:39+00:00",
+      "check": "D-009 duplicates",
+      "purpose": "sensitivity check required by D-009; nothing was tuned on test",
+      "report": "reports/duplicate_check.md",
+      "fingerprints": {
+        "scorecard": "27f4de0069b87a55ee67667fa225dea6819b5135297959c796f7f6b975075114",
+        "test_data": "59f55770fddea973bbfffec33a00e8ef880e2bb57f2e87d181b53d13f622b3b4"
+      }
+    }
   ]
 }

@@ -2,7 +2,7 @@
 # Windows: run from Git Bash, or install make (e.g. `winget install GnuWin32.Make`).
 PY ?= python
 
-.PHONY: help hooks install train rebuild evaluate rehearse migrate serve app lock image up down smoke test lint format check
+.PHONY: help hooks install train rebuild evaluate rehearse dupcheck migrate serve app lock image up down smoke test lint format check
 
 help:
 	@echo "install   editable install with dev tools"
@@ -11,6 +11,7 @@ help:
 	@echo "rebuild   rebuild without verifying (deliberate redevelopment)"
 	@echo "rehearse  run the test evaluation on VALID (writes nothing)"
 	@echo "evaluate  ONE-TIME test evaluation (refuses a second run)"
+	@echo "dupcheck  D-009 duplicates check on valid + test (recorded in the lock, D-033)"
 	@echo "migrate   bring the audit database to the latest schema (alembic upgrade head)"
 	@echo "serve     run the scoring API on http://127.0.0.1:8000 (docs at /docs)"
 	@echo "app       underwriter what-if app on http://127.0.0.1:8501 (simulation only)"
@@ -40,6 +41,9 @@ rehearse:
 
 evaluate:
 	$(PY) -m scorecard.pipelines.evaluate
+
+dupcheck:
+	$(PY) -m scorecard.evaluation.duplicates
 
 migrate:
 	$(PY) -m alembic upgrade head

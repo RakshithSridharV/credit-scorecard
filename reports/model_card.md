@@ -38,9 +38,9 @@ Follows the structure of *Model Cards for Model Reporting* (Mitchell et al., 201
 | Size | 150,000 borrowers; 1 row dropped (age 0) |
 | Target | `SeriousDlqin2yrs = 1`: 90+ days past due within 2 years. Bad rate 6.68% |
 | Split | 70 / 15 / 15 train / valid / test, stratified on the target, seed 42 (D-012) |
-| Use of each split | **Train**: everything fitted. **Valid**: every choice. **Test**: scored once (D-020) |
+| Use of each split | **Train**: everything fitted. **Valid**: every choice. **Test**: evaluated once (D-020); one recorded addendum, the D-009 duplicates check, refits nothing (D-033) |
 | Cleaning | One function used in training and serving alike. Placeholders and special codes become missing; nothing is imputed (D-003 to D-008) |
-| Known data issues | No customer ID, 609 exact duplicates kept (D-009); special codes 96 / 98 of unknown meaning (risk R-1) |
+| Known data issues | No customer ID, 609 exact duplicates kept (D-009); removing them changes AUC by at most 0.0006 ([duplicate_check.md](duplicate_check.md), D-033); special codes 96 / 98 of unknown meaning (risk R-1) |
 
 ## 5. Features
 

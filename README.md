@@ -25,7 +25,7 @@ Money figures are **Illustrative**: they depend on assumed exposure, margin and 
 
 ## What is in it
 
-- **No leakage.** The data is split before anything is fitted. Everything is learned on train and chosen on valid, and test is scored exactly once. Its fingerprints are locked in [reports/test_evaluation.lock.json](reports/test_evaluation.lock.json).
+- **No leakage.** The data is split before anything is fitted. Everything is learned on train and chosen on valid, and test was evaluated once. Its fingerprints are locked in [reports/test_evaluation.lock.json](reports/test_evaluation.lock.json). The only later read of test outcomes, the duplicates check D-009 required, is recorded there as an addendum (D-033).
 - **Reproducible.** One command rebuilds every artifact from the raw CSV and proves it is byte-identical to the tested model.
 - **One decision path.** The API uses the same `clean()` as training. A skew test shows identical scores offline and online.
 - **Fail-safe serving.** Strict input contract (422 errors that never echo applicant data), fail-fast start-up, and fail-closed audit writes: no record means no decision.
@@ -115,9 +115,10 @@ The same applicant with utilisation 0.25, age 45 and no late payments scores **5
 | [docs/architecture.md](docs/architecture.md) | Pipeline, scoring service, audit table, deployment, quality gates |
 | [docs/business_case.md](docs/business_case.md) | Policy outcome, Illustrative value, sensitivity, scorecard vs challenger, KPIs |
 | [docs/assumptions.md](docs/assumptions.md) | Every non-learned number with its source label, limitations, open risks |
-| [docs/decisions.md](docs/decisions.md) | Decision log D-001 to D-032: what, why, alternatives |
+| [docs/decisions.md](docs/decisions.md) | Decision log D-001 to D-033: what, why, alternatives |
 | [reports/model_card.md](reports/model_card.md) | Intended use, performance, subgroups, fairness, monitoring |
 | [reports/age_ablation.md](reports/age_ablation.md) | Experiment: the scorecard without `age`, and who bears the cost |
+| [reports/duplicate_check.md](reports/duplicate_check.md) | AUC with and without duplicate rows on valid and test (D-009): immaterial |
 | [reports/](reports/) | Generated reports for each pipeline stage |
 
 ## Project layout

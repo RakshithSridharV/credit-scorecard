@@ -89,7 +89,7 @@ Each rule was checked against the data audit ([reports/data_audit.md](../reports
 | Past-due codes 96 / 98 become missing | They are status codes, not counts | D-006 |
 | Utilisation above 10 becomes missing | Values far above 1 are mostly dollar balances typed into a ratio field. 1-10 is kept as genuine over-limit borrowing | D-007 |
 | Ages under 18 are dropped (one row, age 0); ages above 100 are kept | A credit contract needs an adult; very old ages are rare but possible | D-008 |
-| Duplicate rows are kept | No customer ID exists, so identical rows may be different people | D-009 |
+| Duplicate rows are kept | No customer ID exists, so identical rows may be different people. Removing them changes AUC by at most 0.0006 on valid and test ([duplicate_check.md](../reports/duplicate_check.md)) | D-009, D-033 |
 | No capping of long tails | WoE binning is already robust to outliers | D-010 |
 | No resampling for the 6.7% bad rate | Resampling distorts PDs. The master scale needs true base rates | D-011 |
 

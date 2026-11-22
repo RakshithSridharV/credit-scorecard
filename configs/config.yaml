@@ -61,6 +61,9 @@ evaluation:            # D-020. The one-time test-set evaluation.
   n_bootstrap: 1000     # resamples of test rows for confidence intervals
   lock: reports/test_evaluation.lock.json  # proof test was scored once; reruns need --force
 
+duplicates:            # D-009 / D-033. AUC with and without duplicate rows, valid and test.
+  material_auc_change: 0.005  # Assumption: about half the test AUC's 95% CI half-width (0.01)
+
 monitoring:            # D-021. Stability of the population the model scores.
   score_bands: 10       # train score deciles, frozen in the baseline
   share_floor: 0.0001   # empty band -> this share, so ln(0) never happens
@@ -95,4 +98,5 @@ reports:
   age_ablation: reports/age_ablation.md
   reason_codes: reports/reason_codes.md
   test_evaluation: reports/test_evaluation.md
+  duplicate_check: reports/duplicate_check.md
   monitoring: reports/monitoring.md

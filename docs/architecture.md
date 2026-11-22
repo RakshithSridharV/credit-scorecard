@@ -41,13 +41,14 @@ flowchart LR
 | Reason codes | `scorecard.explain.reason_codes` | `models/reason_reference.json` |
 | Monitoring | `scorecard.evaluation.psi` | `models/monitoring_baseline.json` |
 | Test evaluation | `scorecard.pipelines.evaluate` | `reports/test_evaluation.md` and `.lock.json` |
+| Duplicates check | `scorecard.evaluation.duplicates` | `reports/duplicate_check.md`, recorded in the lock's `addenda` (D-033) |
 | End-to-end rebuild | `scorecard.pipelines.train` | all of the above, checked against the lock |
 
 **Rules this half enforces**
 
-- **No leakage.** The data is split before anything is fitted. Bins, WoE, feature selection, model coefficients, the master scale and the reason reference are all learned on **train**. Choices are made on **valid**. **Test** is scored exactly once.
+- **No leakage.** The data is split before anything is fitted. Bins, WoE, feature selection, model coefficients, the master scale and the reason reference are all learned on **train**. Choices are made on **valid**. **Test** was evaluated once. Its only later use is the D-009 duplicates check, which refits nothing and is recorded in the lock (D-033).
 - **The test lock.** That single test run records the SHA-256 of every frozen input in `reports/test_evaluation.lock.json`. A second run needs `--force` and is recorded as a forced re-run (D-020).
-- **Reproducibility.** `python -m scorecard.pipelines.train` rebuilds every artifact from the raw CSV and compares the hashes with the lock. A match proves the shipped model is the one that was tested (D-022). Seeds are fixed in `configs/config.yaml`.
+- **Reproducibility.** `python -m scorecard.pipelines.train` rebuilds every artifact from the raw CSV and compares the hashes with the lock. A match proves the shipped model is the one that was tested (D-022). The lock also holds a config fingerprint, but that exact config file was never committed, so it cannot be matched to git history. The evidence for a single test run is the lock plus this rebuild check (D-033). Seeds are fixed in `configs/config.yaml`.
 - **Readable artifacts.** Models are stored as JSON (and LightGBM's native text format), not pickles. They can be reviewed and diffed, and they are safe to load.
 
 ## 2. Online scoring service

@@ -123,6 +123,7 @@ owner), *Open* (still to be resolved), or *Required* (work that must happen late
   without duplicates and report the difference. Proposed definition of "without
   duplicates": remove valid/test rows whose feature values exactly match a train row,
   and keep one copy of duplicates within the split. To be confirmed at that stage.
+- **Done (D-033).** Largest AUC change 0.0006: immaterial, the duplicates stay.
 
 ## D-010 Long tails: no capping
 *Approved, 2026-11-18*
@@ -1015,3 +1016,78 @@ owner), *Open* (still to be resolved), or *Required* (work that must happen late
   - Run on test: reopens the locked set (D-020).
 - **Open risks.** Valid only (the test set stays locked), one time period. A lender would repeat
   this on its own applicants, including protected classes this data does not contain.
+
+---
+
+## D-033 D-009 duplicates check run; how the "test scored once" claim is evidenced
+*Open, 2026-11-22. Awaiting owner approval.*
+
+Three loose ends found in review: the duplicates check D-009 required was never run, the test
+lock's config hash matches no committed config, and notebook 01 had bugs.
+
+**1. The D-009 check.**
+
+- **What.** `python -m scorecard.evaluation.duplicates` (`make dupcheck`) writes
+  [reports/duplicate_check.md](../reports/duplicate_check.md). It uses D-009's proposed
+  definition, now confirmed: drop valid/test rows whose 10 feature values exactly match a train
+  row, and keep one copy of rows repeated inside the split. It runs on two versions of the
+  features:
+  - raw values (primary, the closest proxy for "same applicant");
+  - cleaned values (stricter: cleaning turns placeholders into NaN, so more rows collide).
+- **Results** (deployed PD, the same scoring as the test headline):
+
+  | | removed (raw / cleaned) | AUC all rows | AUC change, raw | AUC change, cleaned |
+  |---|---|---|---|---|
+  | valid | 130 / 456 | 0.8592 | -0.00004 | -0.00044 |
+  | test | 135 / 427 | 0.8602 | -0.00008 | -0.00058 |
+
+  The largest change, 0.0006, is far below the 0.005 materiality threshold (**Assumption**:
+  about half the test AUC's 95% CI half-width). D-009 stands: the duplicates stay.
+- **Guards.** The check reads test outcomes, so it is not a training stage.
+  - It refuses to run unless the scorecard and the test file are byte-identical to the tested
+    ones in the lock.
+  - It refits nothing.
+  - It appends an entry to a new `addenda` list in the lock. `runs` is untouched, and the API
+    and the rebuild read `runs[0]` only.
+  - A second run needs `--force` and is recorded again. It ran twice on 2026-11-22: the second
+    run fixed the report's number formatting, and its numbers are identical.
+- **A look not in the lock.** On 2026-11-22, before this module existed, the reviewer computed
+  the same check by hand. They ranked by the integer score, which is why their baseline differs
+  from the headline: test 0.8607 to 0.8606, valid 0.8591 to 0.8591, on raw values. That was a
+  look at test outside the lock, recorded here because no code wrote it down. Nothing was tuned
+  on it.
+- **Why the integer score gives a different AUC.** The master scale maps score bands to one PD
+  each, so it creates ties that the raw score does not have. AUC counts ties as half-right.
+- **Alternatives.**
+  - Leave it unrun: breaks a recorded requirement.
+  - Run it on valid only: D-009 asked for test too, and the twin-leakage question is about test.
+  - A pass/fail test with a threshold fixed in advance: not possible any more. The threshold
+    was set after the reviewer's result was known, so it is a judgement, not a pre-registered
+    test. The result sits an order of magnitude below it either way.
+
+**2. The config hash in the test lock.**
+
+- **Fact.** The lock's `config` fingerprint (`fa3e87ffb344...`) matches no committed version
+  of `configs/config.yaml`, with LF or CRLF line endings. The config used at test time was never
+  committed: everything went into git in one batch on 2026-11-21. The edits since are not model
+  inputs (a comment's wording, the `fairness:` block, report paths, and now the `duplicates:`
+  block).
+- **What this means.** The evidence that test was scored once is the lock plus the rebuild
+  check. `make train` rebuilds from raw data and must reproduce the tested scorecard, challenger,
+  reason reference and test file byte for byte. Git history does not prove it, and the config
+  fingerprint cannot be matched to anything.
+- **Decision.** Disclose it; do not rewrite or re-lock anything. The README, architecture doc
+  and model card now say "evaluated once, plus one recorded addendum" instead of "exactly once".
+- **Alternatives.**
+  - Add the config to the rebuild check: it would fail forever on cosmetic edits.
+  - Hash only the model-relevant config sections in future locks: a better design for the next
+    model, not worth reopening this lock for.
+
+**3. Notebook 01.** Rebuilt rather than deleted.
+
+- It now uses the pipeline's `load_raw()`. The old `pd.read_csv` kept the row-number column, so
+  `df.duplicated()` would have found 0 duplicates instead of 609.
+- Fixed `df.isna().sum()` and `df.duplicated().sum()`, and dropped the meaningless whole-frame
+  `value_counts()`, the empty cell and `df.head()` (raw rows must not be published, licence).
+- It ends with what each hypothesis showed, linked to the decisions.
+- Every code cell was run; the numbers match the audit report. It is committed without outputs.
